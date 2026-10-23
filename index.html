@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Life Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ❄️ SNOW CANVAS -->
+  <canvas id="snowCanvas" aria-hidden="true"></canvas>
+
+  <!-- TOAST -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ══════════════════════════════════
+       FIXED: PROFIL — pojok kiri atas
+  ══════════════════════════════════ -->
+  <div class="profile-fixed" id="profileFixed">
+    <div class="avatar-wrap">
+      <div id="avatarCircle" class="avatar-circle">?</div>
+      <div class="avatar-overlay" id="avatarOverlay" role="button" tabindex="0"
+           title="Upload foto profil" aria-label="Upload foto profil">📷</div>
+      <input type="file" id="avatarFileInput" accept="image/*" />
+    </div>
+    <div class="profile-info">
+      <div class="profile-name-row">
+        <span id="profileName" class="profile-name">Siapa namamu?</span>
+        <button id="editNameBtn" class="profile-edit-btn" title="Edit nama" aria-label="Edit nama">✏️</button>
+      </div>
+      <div class="profile-sub" id="profileSub">Klik ✏️ untuk atur nama</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════
+       FIXED: TOGGLE — pojok kanan atas
+  ══════════════════════════════════ -->
+  <div class="toggle-fixed">
+    <button id="snowToggle" class="toggle-btn" title="Toggle snow" aria-label="Toggle snow">❄️</button>
+    <button id="themeToggle" class="toggle-btn" title="Toggle theme" aria-label="Toggle theme">
+      <span class="theme-icon">🌙</span>
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════
+       HEADER — hanya jam & greeting
+  ══════════════════════════════════ -->
+  <header class="header">
+    <div id="clock" class="clock" aria-live="polite">00:00:00</div>
+    <div id="dateDisplay" class="date-display"></div>
+    <div class="greeting-line">
+      <span id="greeting"></span>
+    </div>
+    <div id="weatherWidget" class="weather-widget">
+      <span id="weatherIcon">📍</span>
+      <span id="weatherText">Detecting location…</span>
+    </div>
+    <div id="quoteBar" class="quote-bar">
+      <span id="quoteText"></span>
+    </div>
+
+    <!-- Name modal -->
+    <dialog id="nameModal" aria-modal="true" aria-labelledby="nameModalTitle">
+      <div class="modal-header">
+        <h2 id="nameModalTitle">✏️ Atur Nama Profil</h2>
+      </div>
+      <input type="text" id="nameInput" placeholder="Masukkan namamu…" maxlength="40" />
+      <div class="modal-actions">
+        <button id="cancelNameBtn" class="btn btn-ghost">Batal</button>
+        <button id="saveNameBtn" class="btn btn-primary">Simpan</button>
+      </div>
+    </dialog>
+  </header>
+
+  <!-- ══════════════════════════════════
+       MAIN GRID
+  ══════════════════════════════════ -->
+  <main class="grid">
+
+    <!-- ⏱ Focus Timer -->
+    <section class="card timer-card" aria-labelledby="timerTitle">
+      <div class="card-header">
+        <h2 id="timerTitle"><span class="card-icon">⏱</span> Focus Timer</h2>
+        <div class="session-badge" id="sessionBadge">🔥 <span id="sessionCount">0</span> sesi</div>
+      </div>
+      <div class="timer-modes">
+        <button class="mode-pill active" data-minutes="25" id="modeFocus">Focus 25</button>
+        <button class="mode-pill" data-minutes="5"  id="modeShort">Break 5</button>
+        <button class="mode-pill" data-minutes="15" id="modeLong">Long 15</button>
+      </div>
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-track"    cx="60" cy="60" r="52" />
+          <circle class="ring-progress" id="ringProgress" cx="60" cy="60" r="52" />
+        </svg>
+        <div id="timerDisplay" class="timer-display" aria-live="polite">25:00</div>
+      </div>
+      <div class="timer-controls">
+        <button id="startBtn" class="btn btn-primary btn-icon-label"><span>▶</span> Start</button>
+        <button id="stopBtn"  class="btn btn-secondary btn-icon-label"><span>⏸</span> Pause</button>
+        <button id="resetBtn" class="btn btn-ghost btn-icon-label"><span>↺</span> Reset</button>
+      </div>
+      <div class="timer-settings">
+        <label for="pomodoroMinutes">Custom (min):</label>
+        <input type="number" id="pomodoroMinutes" min="1" max="120" value="25" />
+        <button id="applyTimerBtn" class="btn btn-ghost btn-sm">Apply</button>
+      </div>
+    </section>
+
+    <!-- ✅ Tasks -->
+    <section class="card todo-card" aria-labelledby="todoTitle">
+      <div class="card-header">
+        <h2 id="todoTitle"><span class="card-icon">✅</span> Tasks</h2>
+        <div id="taskCounter" class="task-counter">0 / 0 done</div>
+      </div>
+      <div class="todo-add-row">
+        <input type="text" id="taskInput" placeholder="Tambah tugas baru… (Enter)" maxlength="120" />
+        <button id="addTaskBtn" class="btn btn-primary">Add</button>
+      </div>
+      <div class="todo-toolbar">
+        <div class="sort-wrap">
+          <label for="sortSelect">Sort:</label>
+          <select id="sortSelect">
+            <option value="default">Default</option>
+            <option value="az">A → Z</option>
+            <option value="za">Z → A</option>
+            <option value="done">Done last</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <button id="clearDoneBtn" class="btn btn-ghost btn-sm">🧹 Clear done</button>
+        </div>
+      </div>
+      <ul id="taskList" class="task-list"></ul>
+    </section>
+
+    <!-- 📝 Catatan Cepat -->
+    <section class="card note-card" aria-labelledby="noteTitle">
+      <div class="card-header">
+        <h2 id="noteTitle"><span class="card-icon">📝</span> Catatan Cepat</h2>
+        <div class="note-saved-indicator" id="noteSavedIndicator">Tersimpan ✓</div>
+      </div>
+      <textarea id="quickNote" class="quick-note-area"
+        placeholder="Tulis catatan bebas… otomatis tersimpan." maxlength="2000"></textarea>
+      <div class="note-footer">
+        <span id="noteCharCount" class="note-char-count">0 / 2000</span>
+        <button id="clearNoteBtn" class="btn btn-ghost btn-sm">🗑 Hapus</button>
+      </div>
+    </section>
+
+    <!-- 🎵 Music Favorite -->
+    <section class="card music-card" aria-labelledby="musicTitle">
+      <div class="card-header">
+        <h2 id="musicTitle"><span class="card-icon">🎵</span> Music Favorite</h2>
+        <div id="musicNowPlaying" class="music-now-playing">— Tidak ada musik —</div>
+      </div>
+
+      <!-- Player display -->
+      <div class="music-player-display">
+        <div class="music-disc" id="musicDisc">
+          <span id="musicDiscIcon">🎵</span>
+        </div>
+        <div class="music-track-info">
+          <div id="musicTrackName" class="music-track-name">Pilih musik untuk diputar</div>
+          <div id="musicTrackSource" class="music-track-source"></div>
+        </div>
+      </div>
+
+      <!-- Iframe embed (tersembunyi, untuk autoplay YouTube) -->
+      <div id="musicIframeWrap" class="music-iframe-wrap" aria-live="polite"></div>
+
+      <!-- Controls -->
+      <div class="music-controls">
+        <button id="musicPrevBtn"  class="btn btn-ghost btn-sm music-ctrl-btn" title="Sebelumnya">⏮</button>
+        <button id="musicPlayBtn"  class="btn btn-primary music-play-btn" title="Play / Pause">▶ Play</button>
+        <button id="musicNextBtn"  class="btn btn-ghost btn-sm music-ctrl-btn" title="Berikutnya">⏭</button>
+        <button id="musicShuffleBtn" class="btn btn-ghost btn-sm music-ctrl-btn" title="Acak">🔀</button>
+      </div>
+
+      <!-- Playlist -->
+      <div class="music-playlist-wrap">
+        <div class="music-add-row">
+          <input type="text" id="musicTrackInput" placeholder="Nama lagu / playlist…" maxlength="60" />
+          <input type="url"  id="musicUrlInput"   placeholder="URL YouTube / SoundCloud…" maxlength="300" />
+          <button id="musicAddBtn" class="btn btn-primary btn-sm">+ Add</button>
+        </div>
+        <ul id="musicPlaylist" class="music-playlist"></ul>
+      </div>
+    </section>
+
+    <!-- 🔗 Quick Links -->
+    <section class="card links-card" aria-labelledby="linksTitle">
+      <div class="card-header">
+        <h2 id="linksTitle"><span class="card-icon">🔗</span> Quick Links</h2>
+      </div>
+      <div class="links-add-row">
+        <input type="text" id="linkName" placeholder="Nama" maxlength="30" />
+        <input type="url"  id="linkUrl"  placeholder="https://…" maxlength="200" />
+        <button id="addLinkBtn" class="btn btn-primary">+ Add</button>
+      </div>
+      <div id="linksList" class="links-list"></div>
+    </section>
+
+  </main>
+
+  <!-- Edit Task Modal -->
+  <dialog id="editModal" aria-modal="true" aria-labelledby="editModalTitle">
+    <div class="modal-header">
+      <h2 id="editModalTitle">✏️ Edit Task</h2>
+    </div>
+    <input type="text" id="editTaskInput" placeholder="Task text…" maxlength="120" />
+    <div class="modal-actions">
+      <button id="cancelEditBtn" class="btn btn-ghost">Cancel</button>
+      <button id="saveEditBtn"   class="btn btn-primary">Save</button>
+    </div>
+  </dialog>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
